@@ -1163,8 +1163,8 @@ jobs:
           echo "Disabling GPUEB for MTK kernel 5.10"
           sed -i '/obj-y.*gpueb/d' kernel_workspace/kernel-5.10/drivers/gpu/mediatek/Makefile
 
-       - name: FixCloseFd
-         run: |
+      - name: FixCloseFd
+        run: |
           F=$(find . -name preinit.c -path "*kernelsu*" | head -1)
           echo "TARGET=$F"
           test -n "$F" || { echo "NOT FOUND"; exit 1; }
