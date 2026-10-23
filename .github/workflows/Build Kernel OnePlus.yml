@@ -1164,7 +1164,7 @@ jobs:
           sed -i '/obj-y.*gpueb/d' kernel_workspace/kernel-5.10/drivers/gpu/mediatek/Makefile
 
       - name: FixCloseFd
-        run: find kernel_workspace -path "*kernelsu*/preinit/preinit.c" -exec sed -i "s/close_fd(fd)/_close_fd(current->files, fd)/g" {} + || true
+       run: F=$(find . -name preinit.c -path "*kernelsu*" | head -1); echo "TARGET=$F"; sed -i "s/close_fd *(/ _close_fd(current->files, /g" "$F"; grep -n close_fd "$F"
       - name: Build Kernel FAST
         if: ${{ github.event.inputs.FAST_BUILD == 'true' }}
         id: fast_build
