@@ -1164,7 +1164,14 @@ jobs:
           sed -i '/obj-y.*gpueb/d' kernel_workspace/kernel-5.10/drivers/gpu/mediatek/Makefile
 
       - name: FixCloseFd
-       run: F=$(find . -name preinit.c -path "*kernelsu*" | head -1); echo "TARGET=$F"; sed -i "s/close_fd *(/ _close_fd(current->files, /g" "$F"; grep -n close_fd "$F"
+       run: |
+        F=$(find . -name preinit.c -path "*kernelsu*" | head -1)
+        echo "TARGET=$F"
+        test -n "$F" || { echo "NOT FOUND"; exit 1; }
+        sed -i '/#define ksu_close_fd_compat/d' "$F"
+        sed -i 's/ksu_close_fd_compat(/ksu_close_fd(/g' "$F"
+        echo "=== 改后检查 ==="
+        Dgrep -n "ksu_close_fd" "$F"
       - name: Build Kernel FAST
         if: ${{ github.event.inputs.FAST_BUILD == 'true' }}
         id: fast_build
