@@ -1166,19 +1166,24 @@ jobs:
       - name: FixCloseFd
         run: |
           set +e
-          echo "=== 搜索 preinit.c ==="
-          CANDIDATES=$(find kernel_workspace -name preinit.c 2>/dev/null)
-          echo "$CANDIDATES"
-          F=$(echo "$CANDIDATES" | grep -i "kernelsu" | head -1)
-          if [ -z "$F" ]; then
-            echo "NOT FOUND"
-            exit 1
-          fi
+          echo "=== 1. locate preinit.c ==="
+          ALL=$(find kernel_workspace -name preinit.c 2>/dev/null)
+          echo "$ALL"
+          F=$(echo "$ALL" | grep -i kernelsu | head -1)
+          if [ -z "$F" ]; then echo "NO PREINIT"; exit 1; fi
           echo "TARGET=$F"
-          sed -i '/#define ksu_close_fd_compat/d' "$F"
-          sed -i 's/ksu_close_fd_compat(/ksu_close_fd(/g' "$F"
-          echo "=== check ==="
-          grep -n "ksu_close_fd" "$F"
+          echo "=== 2. original lines 120-140 ==="
+          sed -n '120,140p' "$F"
+          echo "=== 3. util.h macro ==="
+          U=$(dirname "$F")/../../include/util.h
+          echo "util.h = $U"
+          ls -la "$U" 2>/dev/null || echo "util.h NOT FOUND"
+          grep -n "close_fd" "$U" 2>/dev/null || echo "no close_fd in util.h"
+          echo "=== 4. replace close_fd and _close_fd ==="
+          sed -i 's/\bclose_fd *(/ksu_close_fd(/g' "$F"
+          sed -i 's/\b_close_fd *(/ksu_close_fd(/g' "$F"
+          echo "=== 5. result ==="
+          grep -n "close_fd" "$F"
           exit 0
       - name: Build Kernel FAST
         if: ${{ github.event.inputs.FAST_BUILD == 'true' }}
