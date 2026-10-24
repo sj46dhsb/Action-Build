@@ -1232,12 +1232,12 @@ jobs:
             find kernel_workspace -name susfs_def.h 2>/dev/null
             exit 1
           fi
-          echo "=== before (line 46) ==="
-          sed -n '45,47p' "$F"
-          sed -i 's/^#define DEFAULT_KSU_MNT_GROUP_ID 200000 /#define DEFAULT_KSU_MNT_GROUP_ID 1 /' "$F"
-          echo "=== after (line 46) ==="
-          sed -n '45,47p' "$F"
-          echo "=== verify MNT_ID untouched ==="
+          echo "=== BEFORE ==="
+          grep -n "DEFAULT_KSU_MNT_GROUP_ID" "$F"
+          sed -i 's/DEFAULT_KSU_MNT_GROUP_ID 200000/DEFAULT_KSU_MNT_GROUP_ID 1/' "$F"
+          echo "=== AFTER ==="
+          grep -n "DEFAULT_KSU_MNT_GROUP_ID" "$F"
+          echo "=== VERIFY MNT_ID ==="
           grep -n "DEFAULT_KSU_MNT_ID " "$F"
           exit 0
           
