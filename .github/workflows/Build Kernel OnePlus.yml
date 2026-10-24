@@ -1207,6 +1207,21 @@ jobs:
           echo "Disabling GPUEB for MTK kernel 5.10"
           sed -i '/obj-y.*gpueb/d' kernel_workspace/kernel-5.10/drivers/gpu/mediatek/Makefile
 
+      - name: DisablePreinit
+        run: |
+          set +e
+          echo "=== locate preinit.c ==="
+          ALL=$(find kernel_workspace -name preinit.c 2>/dev/null)
+          echo "$ALL"
+          F=$(echo "$ALL" | grep -i kernelsu | head -1)
+          if [ -z "$F" ]; then echo "NO PREINIT (already disabled)"; exit 0; fi
+          echo "TARGET=$F"
+          echo "=== before ==="
+          grep -n "ksu_preinit_enabled = " "$F"
+          sed -i 's/^static bool ksu_preinit_enabled = true;/static bool ksu_preinit_enabled = false;/' "$F"
+          echo "=== after ==="
+          grep -n "ksu_preinit_enabled = " "$F"
+          exit 0
       - name: Build Kernel FAST
         if: ${{ github.event.inputs.FAST_BUILD == 'true' }}
         id: fast_build
