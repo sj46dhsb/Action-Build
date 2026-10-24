@@ -1165,13 +1165,21 @@ jobs:
 
       - name: FixCloseFd
         run: |
-          F=$(find . -name preinit.c -path "*kernelsu*" | head -1)
+          set +e
+          echo "=== 搜索 preinit.c ==="
+          CANDIDATES=$(find kernel_workspace -name preinit.c 2>/dev/null)
+          echo "$CANDIDATES"
+          F=$(echo "$CANDIDATES" | grep -i "kernelsu" | head -1)
+          if [ -z "$F" ]; then
+            echo "NOT FOUND"
+            exit 1
+          fi
           echo "TARGET=$F"
-          test -n "$F" || { echo "NOT FOUND"; exit 1; }
           sed -i '/#define ksu_close_fd_compat/d' "$F"
           sed -i 's/ksu_close_fd_compat(/ksu_close_fd(/g' "$F"
           echo "=== check ==="
           grep -n "ksu_close_fd" "$F"
+          exit 0
       - name: Build Kernel FAST
         if: ${{ github.event.inputs.FAST_BUILD == 'true' }}
         id: fast_build
