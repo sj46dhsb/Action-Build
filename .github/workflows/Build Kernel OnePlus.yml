@@ -1222,6 +1222,25 @@ jobs:
           echo "=== after ==="
           grep -n "ksu_preinit_enabled = " "$F"
           exit 0
+      - name: PatchSusfsGroupId
+        run: |
+          set +e
+          F="kernel_workspace/kernel_platform/common/include/linux/susfs_def.h"
+          echo "TARGET=$F"
+          if [ ! -f "$F" ]; then
+            echo "FILE NOT FOUND"
+            find kernel_workspace -name susfs_def.h 2>/dev/null
+            exit 1
+          fi
+          echo "=== before (line 46) ==="
+          sed -n '45,47p' "$F"
+          sed -i 's/^#define DEFAULT_KSU_MNT_GROUP_ID 200000 /#define DEFAULT_KSU_MNT_GROUP_ID 1 /' "$F"
+          echo "=== after (line 46) ==="
+          sed -n '45,47p' "$F"
+          echo "=== verify MNT_ID untouched ==="
+          grep -n "DEFAULT_KSU_MNT_ID " "$F"
+          exit 0
+          
       - name: Build Kernel FAST
         if: ${{ github.event.inputs.FAST_BUILD == 'true' }}
         id: fast_build
